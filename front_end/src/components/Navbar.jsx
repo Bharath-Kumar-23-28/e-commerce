@@ -24,34 +24,80 @@ function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.navbar')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const navItems = [
-    { path: '/', label: 'Home', icon: '🏠' },
-    { path: '/aboutus', label: 'About Us', icon: '👥' },
-    { path: '/products', label: 'Products', icon: '🛏️' },
-    { path: '/custom-bed-creator', label: 'Custom Design', icon: '🎨' }
+    { 
+      path: '/', 
+      label: 'Home', 
+      icon: '🏠', 
+      description: 'Discover our premium collection'
+    },
+    { 
+      path: '/aboutus', 
+      label: 'About Us', 
+      icon: '👥', 
+      description: 'Our heritage since 1954'
+    },
+    { 
+      path: '/products', 
+      label: 'Products', 
+      icon: '🛏️', 
+      description: 'Premium silk cotton beds'
+    },
+    { 
+      path: '/custom-bed-creator', 
+      label: 'Custom Design', 
+      icon: '🎨', 
+      description: 'Design your perfect bed'
+    }
   ];
 
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="navbar-container">
         <div className="navbar-content">
-          {/* Simplified Logo Section - No fake badge */}
+          {/* Logo Section */}
           <div className="logo-container">
-            <Link to="/" className="logo-link">
+            <Link to="/" className="logo-link" onClick={() => setIsMobileMenuOpen(false)}>
               <div className="logo-wrapper">
                 <img 
                   src={logo} 
                   alt="Nagarathinam Logo"
                   className="logo-image"
                 />
+                <div className="logo-shine"></div>
               </div>
               <div className="company-info">
                 <span className="company-name">Nagarathinam</span>
-                <span className="company-tagline">Premium Comfort</span>
+                <span className="company-tagline">Premium Comfort Since 1954</span>
               </div>
             </Link>
           </div>
@@ -74,18 +120,19 @@ function Navbar() {
             </ul>
           </div>
 
-          {/* Compact CTA Section */}
+          {/* Desktop CTA & Mobile Menu Toggle */}
           <div className="navbar-actions">
-            <Link to="/custom-bed-creator" className="cta-button-compact">
-              <span className="cta-icon-small">🎨</span>
-              <span className="cta-text-small">Design</span>
+            <Link to="/custom-bed-creator" className="cta-button-compact desktop-only">
+              <span className="cta-icon-small">✨</span>
+              <span className="cta-text-small">Start Design</span>
             </Link>
             
-            {/* Mobile Menu Toggle */}
+            {/* Hamburger Menu Toggle */}
             <button 
               className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
               onClick={toggleMobileMenu}
               aria-label="Toggle mobile menu"
+              aria-expanded={isMobileMenuOpen}
             >
               <span className="toggle-line"></span>
               <span className="toggle-line"></span>
@@ -94,36 +141,85 @@ function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Dropdown */}
         <div className={`mobile-nav ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
-          <div className="mobile-nav-content">
-            <ul className="mobile-nav-menu">
-              {navItems.map((item) => (
-                <li key={item.path} className="mobile-nav-item">
-                  <Link 
-                    to={item.path} 
-                    className={`mobile-nav-link ${location.pathname === item.path ? 'mobile-nav-link-active' : ''}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <span className="mobile-nav-icon">{item.icon}</span>
-                    <span className="mobile-nav-text">{item.label}</span>
-                    {location.pathname === item.path && (
-                      <span className="mobile-nav-indicator">●</span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            
-            <div className="mobile-nav-footer">
-              <Link 
-                to="/custom-bed-creator" 
-                className="mobile-cta-button-compact"
+          <div className="mobile-nav-container">
+            <div className="mobile-nav-header">
+              <div className="mobile-nav-brand">
+                <span className="mobile-nav-title">Navigation</span>
+                <span className="mobile-nav-subtitle">Choose your destination</span>
+              </div>
+              <button 
+                className="mobile-nav-close"
                 onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Close mobile menu"
               >
-                <span className="mobile-cta-icon">🎨</span>
-                <span className="mobile-cta-text">Start Custom Design</span>
-              </Link>
+                <span className="close-icon">✕</span>
+              </button>
+            </div>
+
+            <div className="mobile-nav-content">
+              <ul className="mobile-nav-menu">
+                {navItems.map((item, index) => (
+                  <li key={item.path} className="mobile-nav-item" style={{animationDelay: `${index * 0.1}s`}}>
+                    <Link 
+                      to={item.path} 
+                      className={`mobile-nav-link ${location.pathname === item.path ? 'mobile-nav-link-active' : ''}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="mobile-nav-icon-wrapper">
+                        <span className="mobile-nav-icon">{item.icon}</span>
+                      </div>
+                      <div className="mobile-nav-text-wrapper">
+                        <span className="mobile-nav-text">{item.label}</span>
+                        <span className="mobile-nav-description">{item.description}</span>
+                      </div>
+                      <div className="mobile-nav-arrow">
+                        {location.pathname === item.path ? (
+                          <span className="current-indicator">●</span>
+                        ) : (
+                          <span className="arrow-icon">→</span>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              
+              <div className="mobile-nav-footer">
+                <Link 
+                  to="/custom-bed-creator" 
+                  className="mobile-cta-button"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="cta-icon-container">
+                    <span className="mobile-cta-icon">🎨</span>
+                    <div className="cta-sparkle">✨</div>
+                  </div>
+                  <div className="mobile-cta-content">
+                    <span className="mobile-cta-title">Start Custom Design</span>
+                    <span className="mobile-cta-subtitle">Create your perfect bed experience</span>
+                  </div>
+                  <span className="mobile-cta-arrow">→</span>
+                </Link>
+                
+                <div className="mobile-nav-contact">
+                  <div className="contact-header">
+                    <span className="contact-emoji">💬</span>
+                    <span className="contact-title">Need Help?</span>
+                  </div>
+                  <div className="contact-actions">
+                    <a href="tel:+1234567890" className="contact-link call">
+                      <span className="contact-icon">📞</span>
+                      <span>Call Now</span>
+                    </a>
+                    <a href="mailto:info@nagarathinam.com" className="contact-link email">
+                      <span className="contact-icon">✉️</span>
+                      <span>Email Us</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
